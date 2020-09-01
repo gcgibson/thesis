@@ -104,6 +104,7 @@
 
 %% One way of formatting the epigraph/frontispiece is to use this package.
 %\usepackage{epigraph}
+\usepackage{amsmath}
 
 \begin{document}
 
@@ -249,9 +250,12 @@
 %% the following two lines.  This is OPTIONAL:
 \unnumberedchapter{Introduction}
 
-   Infectious disease modeling has emerged as a powerful public health tool in the last century. Beginning with early differential equation models first proposed by Kermack and McArthy, infectious disease modeling has expanded drastically, both in terms of theoretical and computational advances.  Many infectious disease competitions have emerged in the last few years, most often hosted by government agencies looking for academic research teams to assist them in decision making. These have included an influenza forecasting challenge hosted by the CDC, a Dengue challenge hosted by NOAA, and most recently a COVID-19 forecasting competition also organized by the CDC. The desire for accurate infectious disease forecasts at the decision making level is clearly increasing. The number of participants in infectious disease forecasting is also increasing rapidly. The Flusight challenge has seen a doubling of teams from year to year, and the COVID-19 challenge has seen over 30 teams submit forecasts during the pandemic. 
+   Infectious disease modeling has emerged as a powerful public health tool in the last century. In an effort to understand the trajectory, impact, and intervention targets of diseases, modelers from around the globe have turned their attention to infectious diseases. While still in its infancy (compared to weather modeling), infectious disease models have been used to make actionable public health decisions. Most recently, government agencies have begun looking for to infectious disease modeling groups to produce forecasts in real-time. These have included an influenza forecasting challenge hosted by the CDC, a Dengue challenge hosted by NOAA, and most recently a COVID-19 forecasting competition also organized by the CDC. The desire for accurate infectious disease forecasts at the decision making level is clearly increasing. 
+   
+   This thesis focuses on the use of infectious disease models in real-world forecasting scenarios where data collection is imperfect, model parameters are difficult to identify, and operational forecasts are made with actionable consequences under time constraints. In real epidemic scenarios, such as the COVID-19 pandemic, forecasts must be made at multiple spatial scales. While in theory, modelers should be able to account for spatial correlation in the model, this is not always possible in real-time forecasting scenarios. In chapter one, we explore projection techniques that allow modelers to produce independent forecasts by region while still retaining the underlying spatial hierarchy  of the surveillance process. Another frequent challenge in real-time forecasting is the variety of data quality issues that arise. Data from surveillance systems, especially in an emerging disease such as COVID-19, is often under-reported, mis-reported and delayed. Additionally, when observations are made on multiple data streams, such as cases and deaths, these factors can have different effects on each data stream. Building real-world forecasting models requires taking these operational challenges into consideration when designing the model. In chapter two we describe a novel Bayesian infectious disease forecasting model that accounts for data quality issues, joint observations on cases and deaths, and time-varying transmissibility due to intervention efforts.  The last challenge we address, is the ability to accurately measure the efficacy of interventions put in place during an epidemic. This is particularly important during an emerging epidemic, where the majority of the interventions will be non-pharmaceutical based  (non-vaccination) and will relate more to human mobility (social isolation and quarantining). Understanding the effects of these measures on the time-varying reproduction number (a measure of how many cases a single infected individual is expected to produce at a given time) requires estimation from surveillance data. In chapter three, we explore the properties of common estimators from a probabilistic perspective, to gain insight into their bias in real-world settings. The remainder of the introduction is devoted to providing context for these developments in the larger infectious disease modeling realm.
+      
 \section{Background}
-While many are familiar with iconic story of Jon Snow and the Cholera pump handle, I choose to begin the story with the start of compartmental modeling. In 1906, W.H. Hamer proposed adopting an idea familiar in Physics, the law of mass action, to the modeling of epidemics. This idea, translated into modern terminology, reflects the fact that the spread of infection should be related to the number of infected people and the number of susceptible people in a closed population. Models based on the principle were put to use as early as 1911, where Dr. Ross built a compartmental model to describe the dynamics of Malaria. He showed that Malaria could be eradicated from a population, even with the vector present, as long as the number of mosquitos fell below a critical threshold. This lead to actionable public health measures, wehreby mosquito control targets were set based on compartmental model theory. 
+In 1906, W.H. Hamer proposed adopting an idea familiar in Physics, the law of mass action, to the modeling of epidemics. This idea, translated into modern terminology, reflects the fact that the spread of infection should be related to the number of infected people and the number of susceptible people in a closed population. Models based on the principle were put to use as early as 1911, where Dr. Ross built a compartmental model to describe the dynamics of Malaria. He showed that Malaria could be eradicated from a population, even with the vector present, as long as the number of mosquitos fell below a critical threshold. This lead to actionable public health measures, wehreby mosquito control targets were set based on compartmental model theory. 
 
 The law of mass action led to the development of "compartmental model" theory by Kermack and McCarthy in 1927. However, the model originally proposed is quite different from the standard susceptible-infected-recovered model commonly described in the modern literature. The model they original postulated was defined as 
 
@@ -301,12 +305,41 @@ One of the most studied quantities to come from the simple SIR model is known as
 I'(t) =(\beta - \gamma) *I(t)
 \end{equation}
 
-Therefore, if $\beta-\gamma \leq 0$ (which is the same condition as $\frac{\beta}{\gamma}  < 1$the derivative of prevalent infections is negative, meaning infections are decreasing. If $ $\frac{\beta}{\gamma}  >1$ then infections are increasing. 
+Therefore, if $\beta-\gamma \leq 0$ (which is the same condition as $\frac{\beta}{\gamma}  < 1$the derivative of prevalent infections is negative, meaning infections are decreasing. If $\frac{\beta}{\gamma}  >1$ then infections are increasing. 
+
+We can extend this concept to be time-varying, be defining $R(t)$ to be the expected number of secondary cases an infected individual will produce at time $t$. In the simple SIR model, this allows us to keep track of the diminishing susceptible population. 
+
+\begin{equation}
+R_{SIR}(t) = \frac{\beta}{\gamma}S(t)
+\end{equation}
+
+Thus, we can see that as the epidemic progresses $R(t)$ is uniformly decreasing due to a uniformly decreasing susceptible population. In particular, if we knew the analytical form for $S(t)$ we could solve for the point at which $R_{SIR}(t) <1$ meaning that the epidemic is ``decreasing".
+
+The final properties of compartmental models we introduce is that of the generation interval and serial interval. The generation interval can be defined as the time from exposure of an individual to secondary infection (when the individual infects someone else). Similarly, the serial interval can be defined as the time from onset of symptoms to secondary infection. Note that in an SIR model, symptom onset and infection occur simultaneously, so the serial interval and generation interval are equal by definition. However, this is not true of all compartmental models. In particular, the susceptible-exposed-infected-recovered (SEIR) model, which adds an E compartment for individuals who have been exposed but have not developed symptoms, has a larger generation interval than serial interval. Returning to the renewal equation setup, we can see that the generation interval can play the role of the time to offspring. Indeed Fraser defines the infectious disease version of the Euler-Lotka equation as \cite{fraser2007estimating}
+
+\begin{equation}
+I'(t) = R_t \int_0^t I'(\tau) g_{\tau} d\tau
+\end{equation}
+
+where $I'(t)$ denotes the number of new infections at time $t$ and $g_{\tau}$ represents the serial interval probability function evaluated at $\tau$. Here we can think of $\tau$ as a time index from start of epidemic until current time.
+
+Finally, we turn to stochastic compartmental models. First developed in the 1950's by Bailey and Whittle \cite{whittle1955outcome}\cite{bailey1953total}. These models re-framed the differential equation models of 1920's as Markov chains, with transition probabilities that involve the same parameters as the differential equations. We can define the Markov chain analogue of the SIR model as follows \cite{allen2010introduction}\cite{allen2000comparison}\cite{brauer2012mathematical}. 
 
 
-\section{Modeling Approaches}
+\begin{equation}
+    P(S_{t} +k, I_{t} + j | S_{t-1},I_{t-1}) =
+    \begin{cases}
+    \beta *I_{t-1} * S_{t-1} * \delta t \ \  \ \ \ \ \ \ \ \ \ \ \ \ \  \ \  \ \ \ \ \ \text{for } k=-1,j=1\\ 
+      \gamma  *I_{t-1}*\delta t \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \  \ \  \ \ \text{for } k=0,j=-1\\
+      
+       (1 -\beta *I_{t-1} * S_{t-1}  -\gamma *I_{t-1})*\delta t   \ \ \text{for } k=0,j=0\\
+    \end{cases}
+\end{equation}
+
+Where we choose $\delta t$ small enough that only one of three mutually exclusive events can occur. Either there is a single infection, in which case the number of susceptibles drops by one and the number of infected increases by one, or there is a single recovery, in which case the number of infected drops by one, or no event occurs. Note that we can recover the number of recovered using the population constraint. Choosing $\delta t$ small enough ensures that each transition is a valid probability $<1$. 
+
+
 \subsection{Statistical models}
-\subsection{Compartmental Models}
 \subsubsection{Deterministic}
 \subsubsection{Stochastic}
 
