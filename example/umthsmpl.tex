@@ -370,7 +370,13 @@ Finally, we turn to stochastic compartmental models. First developed in the 1950
 
 Where we choose $\delta t$ small enough that only one of three mutually exclusive events can occur. Either there is a single infection, in which case the number of susceptibles drops by one and the number of infected increases by one, or there is a single recovery, in which case the number of infected drops by one, or no event occurs. Note that we can recover the number of recovered using the population constraint. Choosing $\delta t$ small enough ensures that each transition is a valid probability $<1$. This construction is particularly helpful when assessing the probabilistic properties of common infectious disease model estimators. While these models were introduced shortly after the differential equation models, they have not been nearly as widely adopted, possibly due to the computational limitations. Note that the Markov chain representation also extends to arbitrarily complicated compartmental models by defining the transition probabilities between each compartment. 
 
+
+
+
+
 However, there are a few key differences between the deterministic counterparts. First, in the deterministic differential equation the event that neither an infection or recovery occurs is impossible. By integrating time at all (even a small $\epsilon$), there is necessarily a transfer between compartments. Second, there is a non-zero probability that even with an $R_0 > 1$ the epidemic will die out in the stochastic model. That is, you could have every initially infected person recover before they infect anyone else. While this probability is small, it is non-zero, unlike the differential equation model. 
+
+
 
 
 \subsection{Statistical models}
@@ -402,7 +408,7 @@ While hybrid models do have promise in the real of forecasting, once a non-param
 
 \section{Surveillance Systems}
 
-Infectious disease surveillance began as early as the Egyp
+Infectious disease surveillance began as early as the Egyptians, with Pharaoh Memphsis recording the first great ``pestilence" \cite{choi2012past}. In fact, many historical records exist of epidemics all over the ancient world. However, the first proper tally of the burden of infectious disease came from Venice in 1348, at the height of the black plague. Public health officials of Venice were able to trace the source of an outbreak to ships arriving from oversees. They were able to take action and ban the docking of black plague infected ships. This is the first documented actionable use of infectious disease surveillance \cite{moro1988surveillance}. 
 
 In applied infectious disease forecasting, the surveillance system that detects and reports cases or deaths must be taken into account when building a model. Each system has a unique set of challenges in collecting data. While the issues surrounding COVID-19 are well known, incomplete testing, asymptomatic transmission and delayed reporting, routine influenza surveillance also suffers from these issues. 
 
@@ -1644,6 +1650,98 @@ Our prior on the initial transmission rate is derived from the relationship betw
 %%
 Our prior on the fatality rate $\rho$ satisfies $\E[\rho] = 0.1$ with 90\% probability of being between \[0.06,.14\].
 Finally, our prior on the rate at which dying patients succumb  satisfies $\lambda$ $\E[\lambda] = 0.1$ with shape 10 corresponding to roughly 10 days in the $D_{1}$ compartment.
+
+
+
+\chapter{Bias of the common $R_t$ estimation routines}
+
+With the outbreak of COVID-19 across the U.S., a variety of public health interventions have been put in place across the states. These include, but are not limited to, school closures, restaurant and bar closures, face mask mandates, and mandatory social distancing. Understanding the impacts of these interventions across different states requires a normalized metric (independent of population size of prevalence) with a critical threshold. Most often, epidemiologists turn to the time varying reproduction number $R_t$, to assess the impact of interventions. If $R_t <1$ then the intervention has brought the epidemic ``under control", in that it is expected to die out. A value of $R_t < 1$ may be interpreted as an infected individual is expected to produce fewer than one secondary cases at time $t$, meaning the epidemic cannot sustain itself. 
+
+A variety of estimation procedures have been proposed to capture $R_t$ in real-time. Possibly the most common is the method proposed by Cori et. al, which uses a renewal equation style estimator of the following form \cite{cori2013new}. 
+
+\begin{equation}
+\hat{R_t} = \frac{I'_t}{\sum_{i=1}^t I'_{t-i} g_i}
+\end{equation}
+ 
+ 
+ where $I'_t$ denotes the number of new cases at time $t$ (as opposed to $I_t$ which denotes prevalent cases) and $g_i$ denotes the serial interval distribution evaluated at $i$. Here we distinguish the generation interval from the serial interval, with the former representing the time between exposure to infection of a susceptible, and the latter representing the time between symptom onset of symptoms to infection of a susceptible. Note that these are equivalent in the SIR model, but in an SEIR the generation interval is equal to the serial interval plus the duration of the exposure period. 
+ 
+ Many groups have used the Cori estimator to capture the effect of COVID-19 interventions across states in the U.S. \cite{gostic2020practical}{flaxman2020estimating}. While renewal style estimators have been shown to perform well in practice \cite{gostic2020practical}, their theoretical properties remain largely unexplored. In what follows, we develop the theoretical construction of the renewal style equation for the SIR model, demonstrate that the estimator is unbiased, and investigate the effect of testing on the estimator.  
+ 
+ \section{Deterministic Discrete SIR model}
+We begin with a discrete time construction of the SIR model that will allow us to demonstrate the equivalence between the renewal style equations presented in the introduction and the SIR model.
+
+\begin{eqnarray}
+I'_t &=& \beta S_{t-1} I_{t-1} \\
+S_t &=& S_{t-1} - I'_{t}\\
+I_t = &=& I_{t-1} + I'_t - \gamma I_{t-1}
+\end{eqnarray}
+
+
+This construction allows us to consider the new number of incident infections at time t (those who are newly infected). It immediately allows us to find the corresponding renewal equation for the SIR model, after we consider that we can write the total number of prevalent infections ($I_t$) as follows,
+
+\begin{equation}
+I_t = \sum_{i=0}^t I'_{t-i} (1-F_R(i))
+\end{equation}
+
+where $(1-F_R(i))$ is one minus the CDF of the distribution of time to recovery, or in other words the survival function, indicating all previous incident infections that have survived until time $t$. In the SIR model, we know the distribution of time to recover is $Exp(\gamma)$, which in the discrete setting becomes $Geom(\gamma)$ (as the exponential distribution is the limiting distribution of geometric as $n \rightarrow \infty)$. We can now manipulate the above expression to find the corresponding renewal equation.
+
+\begin{eqnarray}
+I_t &=& \sum_{i=0}^t I'_{t-i} (1-\gamma)^i\\
+\frac{I'_{t+1}}{\beta*S_{t}} &=& \sum_{i=0}^t I'_{t-i} (1-\gamma)^i\\
+I'_{t+1} &=& \beta*S_{t}\sum_{i=0}^t I'_{t-i} (1-\gamma)^i\\
+I'_{t+1} &=& \frac{\gamma}{\gamma} \beta*S_{t}\sum_{i=0}^t I'_{t-i} (1-\gamma)^i\\
+I'_{t+1}t &=& \frac{ \beta*S_{t}}{\gamma}\sum_{i=0}^t I'_{t-i} \gamma(1-\gamma)^i\\
+I'_{t+1} &=& \frac{ \beta*S_{t}}{\gamma}\sum_{j=1}^t I'_{t-j-1} \gamma(1-\gamma)^{j-1}\\
+I'_{t'} &=& \frac{ \beta*S_{t'-1}}{\gamma} \sum_{j=1}^t I'_{t'-j} \gamma(1-\gamma)^{j-1}
+\end{eqnarray}
+
+where we recognize  $\gamma(1-\gamma)^{j-1}$ as the pdf of the $Geom(\gamma)$ distribution. Thus we have shown that in a discrete deterministic SIR model, the distribution of the time to recovery is the same as the serial interval. 
+
+This also allows us to immediately see that the Cori estimator is equivalent to the effective reproduction number of an SIR model. 
+
+\begin{eqnarray}
+\hat{R_t} &=& \frac{I'_t}{\sum_{i=1}^t I'_{t-i} g_i}\\
+\hat{R_t} &=& \frac{I'_t}{\frac{\gamma I'_t }{\beta*S_{t-1}}}\\
+\hat{R_t} &=& \frac{\beta*S_{t-1}}{\gamma}
+\end{eqnarray}
+
+\section{Extension to probabilistic discrete SIR model}
+
+In order to accurately assess bias of an estimator, we must first examine the underlying probabilistic construction. We extend the above model to allow for stochasticity as follows. 
+
+
+\begin{eqnarray}
+I'_t &\sim& Poisson(S_{t-1}\beta I_{t-1}) \\
+R'_t &\sim& Poisson(I_{t-1} \gamma)\\
+S_t &=& S_{t-1} - I'_{t}\\
+I_t = &=& I_{t-1} + I'_t - R'_t
+\end{eqnarray}
+
+Consider the Cori estimator in the context of the probabilistic discrete SIR model, 
+
+\begin{eqnarray}
+\hat{R_t} | H_{t-1} &=& \frac{I'_t}{\sum_{i=1}^t I'_{t-i} g_i}\\
+\hat{R_t} | H_{t-1} &=& \frac{I'_t}{\gamma \sum_{i=1}^t I'_{t-i} (1-\gamma)^i}\\
+\hat{R_t} | H_{t-1} &=& \frac{I'_t}{\gamma \sum_{i=1}^t I'_{t-i} (1-\gamma)^i}\\
+\hat{R_t} | H_{t-1} &=& \frac{I'_t}{\gamma I_{t-1}}\\
+\mathbf{E}[\hat{R_t} | H_{t-1}] &=& \frac{S_{t-1}\beta I_{t-1}}{\gamma I_{t-1}}\\
+\mathbf{E}[\hat{R_t} | H_{t-1}] &=& \frac{S_{t-1}\beta }{\gamma }\\
+\end{eqnarray}
+
+where $H_t = \{I'_{1:t},R'_{1:t},S_{1:t},I_{1:t}\}$, that is, the history of the epidemic trajectory until the current time. We can see that the Cori estimator is an unbiased estimate for the given probabilistic construction. In fact, for any probabilistic construction with the first moment of incident cases is $\beta*S_{t-1}*I_{t-1}$ and whose serial interval is $Geom(\gamma)$, the estimator is unbiased.
+
+\section{ The effect of testing on $R_t$ bias}
+
+With an unbiased estimate of $R_t$ of a discrete probabilistic SIR model, we can now investigate the effect of testing on the estimator. Here we consider testing to be the probabilistic equivalent of moving $I'_t,S_t,I_t$ from observed to latent variables. We now observe only a fraction of the latent cases. 
+
+\subsection{Time invariant testing}
+
+The first model of testing we consider is through a time-invariant detection probability, each case has a probability of being detected. 
+
+\begin{equation}
+I'_{t,o} \sim Binomial(I'_t,p)	
+\end{equation}
 
 
 %% End of body
