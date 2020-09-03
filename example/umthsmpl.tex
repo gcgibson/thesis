@@ -1743,6 +1743,39 @@ The first model of testing we consider is through a time-invariant detection pro
 I'_{t,o} \sim Binomial(I'_t,p)	
 \end{equation}
 
+Using the estimator from the previous section, we replace $I'_t$ with the observed $I'_{t,o}$ and $I_t$ with the observed $I_{t,o}$.
+
+\begin{eqnarray}
+\hat{R_t} | H_{t-1} &=& \frac{I'_{t,o}}{\gamma \sum_{i=1}^t I'_{t-i,o} (1-\gamma)^i}\\
+\hat{R_t} | H_{t-1} &=& \frac{I'_{t,o}}{\gamma \sum_{i=1}^t I'_{t-i,o} (1-\gamma)^i}
+\end{eqnarray}
+
+Here we get stuck, since we cannot claim that $\sum_{i=1}^t I'_{t-i,o} (1-\gamma)^i = I_{t-1,o}$. This only true in expected value, 
+
+\begin{eqnarray}
+\mathbf{E}[I_{t-1,o}] &=& \mathbf{E}[\sum_{i=1}^t I'_{t-i,o} (1-\gamma)^i]\\
+pI_{t-1,o} &=& p\sum_{i=1}^t I'_{t-i} (1-\gamma)^i]\\
+I_{t-1,o} &=& \sum_{i=1}^t I'_{t-i} (1-\gamma)^i]
+\end{eqnarray}
+
+However, the random variable $I_{t,0}$ does not equal $p I_{t,0}$. Thus, in the probabilistic setting, even time invariant testing leads to a biased estimate of $R_t$. This is, however, not true in the deterministic model, where the probability of detecting a case can be written as a multiplier on both the numerator and denominator, where it cancels. This property was explored in Pitzer et. al for a similar $R_t$ estimator \cite{pitzer2020impact}. 
+
+\subsection{Time-dependent testing}
+While we have seen that time-invariant testing biases the Cori estimator, we can also examine the effect of time-dependent testing. This is particularly a problem in emerging epidemic situations, where testing can be slow to roll out. This corresponds to the following sampling model.
+
+\begin{equation}
+I'_{t,o} \sim Binomial(I'_t,p_t)	
+\end{equation}
+
+
+\section{Magnitude of bias in Discrete Stochastic SIR model}
+
+This section will demonstrate, through simulation study, the effect of the bias under the testing construction above. 
+
+
+\section{Correcting for the bias}
+
+
 
 %% End of body
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
