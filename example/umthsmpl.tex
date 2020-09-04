@@ -247,13 +247,12 @@
 
 %%
 %% Acknowledgements are optional...yeah, right.
-\chapter{Acknowledgments}             % Acknowledgements page
-  I would like to thank my advisor and professors for their guidance and 
+%\chapter{Acknowledgments}             % Acknowledgements page
 
 %%
 %% Abstract is MANDATORY. -- Except for MS theses
 \begin{abstract}                % Abstract
-  Infectious disease modeling has emerged as a powerful data driven tool for monitoring outbreaks, assessing intervention strategies, and allocating resources. Modern infectious disease forecasting relies on surveillance data systems with a variety of reporting issues from delayed reporting, incomplete testing, and changing case definitions. Forecasts are also made at a wide variety of spatial scales, which can be computationally prohibitive for a large class of models to do hiearchically. In this work we first present methods for aggregating forecasts made at different spatial scales. We then present methods for adjusting forecasts for reporting delay. Finally, we present an operational forecasting model that uses the lessons learned in the previous two chapters to extend the SEIR modeling framework to forecast COVID-19.
+  Infectious disease modeling has emerged as a powerful data driven tool for monitoring outbreaks, assessing intervention strategies, and allocating public health resources. Modern infectious disease forecasting relies on surveillance data systems with a variety of reporting issues from delayed reporting, incomplete testing, and changing case definitions. Forecasts are also made at a wide variety of spatial scales, which can be computationally prohibitive for a large class of models to do hierarchically. This thesis addresses a variety of challenges faced in real-world infectious disease forecasting. We first present methods for aggregating forecasts made at different spatial scales, where explicitly modeling the spatial dependency would be prohibitive. We then present methods for adjusting forecasts for possible revisions due to delayed reporting. We then present an operational forecasting model that uses the lessons learned in the previous two chapters to extend the SEIR modeling framework to forecast COVID-19. Finally, we examine the impact of testing on classical estimators of the effect of interventions on transmission. 
 \end{abstract}
 
 %%
@@ -282,14 +281,15 @@
 %% the following two lines.  This is OPTIONAL:
 \unnumberedchapter{Introduction}
 
-   Infectious disease modeling has emerged as a powerful public health tool in the last century. In an effort to understand the trajectory, impact, and intervention targets of diseases, modelers from around the globe have turned their attention to infectious diseases. While still in its infancy (compared to weather modeling), infectious disease models have been used to make actionable public health decisions. Most recently, government agencies have begun looking for to infectious disease modeling groups to produce forecasts in real-time. These have included an influenza forecasting challenge hosted by the CDC, a Dengue challenge hosted by NOAA, and most recently a COVID-19 forecasting competition also organized by the CDC. The desire for accurate infectious disease forecasts at the decision making level is clearly increasing. 
+   Infectious disease modeling has emerged as a powerful public health tool in the last century. In an effort to understand the trajectory, impact, and intervention targets of diseases, forecasters from around the globe have turned their attention to infectious diseases. While still in its infancy (compared to weather modeling), infectious disease models have been used to make actionable public health decisions. Most recently, government agencies have begun looking for to infectious disease modeling groups to produce forecasts in real-time for both emerging and endemic diseases. These have included an influenza forecasting challenge hosted by the CDC, a dengue challenge hosted by NOAA, and most recently a COVID-19 forecasting initiative. With an increase in the use of infectious disease forecasting for decision making, previously unknown issues and challenges in both theory and operation have come to light.
    
-   This thesis focuses on the use of infectious disease models in real-world forecasting scenarios where data collection is imperfect, model parameters are difficult to identify, and operational forecasts are made with actionable consequences under time constraints. In real epidemic scenarios, such as the COVID-19 pandemic, forecasts must be made at multiple spatial scales. While in theory, modelers should be able to account for spatial correlation in the model, this is not always possible in real-time forecasting scenarios. In chapter one, we explore projection techniques that allow modelers to produce independent forecasts by region while still retaining the underlying spatial hierarchy  of the surveillance process. Another frequent challenge in real-time forecasting is the variety of data quality issues that arise.Data from surveillance systems, especially in an emerging disease such as COVID-19, is often under-reported, mis-reported and delayed. In chapter two, we explore statistical techniques for adjusting forecasts to account for reporting delay.  Finally, we operationalize a forecasting model that takes these issues into account and apply it to real-time forecasting of the COVID-19 pandemic in the U.S.. 
+   This thesis focuses on the use of infectious disease models in real-world forecasting scenarios where data collection is imperfect, model parameters are difficult to identify, and forecasts are made with actionable consequences under time constraints. In real epidemic scenarios, such as the COVID-19 pandemic, forecasts must be made at multiple spatial scales across a wide variety of geographies. While in theory, modelers should be able to account for spatial correlation in the model, this is not always possible in real-time forecasting scenarios due to computational constraints. In chapter one, we explore projection techniques that allow modelers to produce independent forecasts by region while still retaining the underlying spatial hierarchy of the disease surveillance process. Another frequent challenge in real-time forecasting is the variety of data quality issues that arise. Data from surveillance systems, especially in an emerging disease such as COVID-19, is often under-reported, mis-reported and delayed. In chapter two, we explore statistical techniques for adjusting forecasts to account for reporting delay. In chapter three, we operationalize a forecasting model that takes these issues into account and apply it to real-time forecasting of the COVID-19 pandemic in the U.S.. Finally, we turn our attention to the practical implications of testing on common intervention analysis techniques that involve the time varying reproduction number. We develop a probabilistic discrete susceptible-infected-recovered model to demonstrate theoretical consequences of testing on common time varying reproduction numbers.
    
 \section{Infectious Disease Model Theory}
-In 1906, W.H. Hamer proposed adopting an idea familiar in Physics, the law of mass action, to the modeling of epidemics. This idea, translated into modern terminology, reflects the fact that the spread of infection should be related to the number of infected people and the number of susceptible people in a closed population. Models based on the principle were put to use as early as 1911, where Dr. Ross built a compartmental model to describe the dynamics of Malaria. He showed that Malaria could be eradicated from a population, even with the vector present, as long as the number of mosquitos fell below a critical threshold. This lead to actionable public health measures, wehreby mosquito control targets were set based on compartmental model theory. 
 
-The law of mass action led to the development of "compartmental model" theory by Kermack and McCarthy in 1927. However, the model originally proposed is quite different from the standard susceptible-infected-recovered model commonly described in the modern literature. The model they original postulated was defined as 
+In 1906, W.H. Hamer proposed adopting an idea familiar in Physics, the law of mass action, to the modeling of epidemics \cite{brauer2017mathematical}. This idea, translated into modern terminology, reflects the fact that the spread of infection should be related to the number of infected people and the number of susceptible people in a closed population. Models based on the principle were put to use as early as 1911, where Dr. R.A. Ross built a ``compartmental model" (so named for each individual belonging to a mutually exclusive set of disease state compartments)  to describe the dynamics of Malaria. He showed that Malaria could be eradicated from a population, even with the vector present, as long as the number of mosquitos fell below a critical threshold \cite{brauer2016some}. This lead to the first instance of actionable public health measures, whereby mosquito control targets were set based on compartmental model theory. 
+
+The law of mass action led to the full development of compartmental model theory by Kermack and McKendrick in 1927. However, the model originally proposed is quite different from the standard susceptible-infected-recovered model commonly described in the modern literature. The model they original postulated was defined as 
 
 
 \begin{eqnarray}
@@ -301,40 +301,31 @@ The law of mass action led to the development of "compartmental model" theory by
   A(s) &=& \phi(s)B(s)
 \end{eqnarray}
 
-where $x(t)$ is the number of susceptibles at time t, $y(t)$ is the number of infected individuals at time t, and $z(t)$ is the number of recovered individuals, $\phi(s)$ is the recovery rate at age of infection $s$ and $\psi(s)$ is infection rate at age of infection $s$. This model is sometimes referred to as the "age of infection model", since the model requires that we keep track of the time elapsed for each individual, i.e. their "age of infection". This model is heavily based on the differential equation identity commonly known as the Euler Lotka equation from population ecology \cite{wallinga2007generation}. 
+where $x(t)$ is the number of susceptibles at time t, $y(t)$ is the number of infected individuals at time t, and $z(t)$ is the number of recovered individuals, $\phi(s)$ is the recovery rate at age of infection $s$ and $\psi(s)$ is infection rate at age of infection $s$. While the specifics of the model are not related to the central work in this thesis, the model does highlight how early infectious disease modelers thought about epidemics. This model is sometimes referred to as the ``age of infection model", since the model requires that we keep track of the time elapsed for each individual, i.e. their age of infection. This is contrast with the modern susceptible-infected-recovered model that ignores the age of infection. 
+
+\begin{eqnarray}
+ \frac{dS}{dt} &=& -\beta SI\\
+  \frac{dI}{dt} &=& \beta SI - \gamma I\\
+  \frac{dR}{dt} &=&\gamma I\\
+S+I+R&=&N
+ \end{eqnarray}
+
+where $N$ is the closed population size.
+
+
+This model presented by Kermack and McKendrick relies heavily on the differential equation identity commonly known as the Euler-Lotka equation from population ecology \cite{wallinga2007generation}. 
 
 \begin{equation}
   b(t) =\int_0^\infty b(t-a)l(a)m(a) da
 \end{equation}
 
-where $b(t)$ represents the number of births in a population, $r$ represents the growth rate, $l(a)$ is a function denoting what percentage of offspring survive $a$ time units, $m(a)$ represents the number of offspring a mother will produce at $a$ time units. Kermack and McCormick recognized that this equation could be mapped onto an epidemic by treating new infections as ``births".  We can transform the Kermack and McCormick model to the commonly known SIR differential equation model by applying the following transformation.
+where $b(t)$ represents the number of births in a population, $r$ represents the growth rate, $l(a)$ is a function denoting what percentage of offspring survive $a$ time units, $m(a)$ represents the number of offspring a mother will produce at $a$ time units. Kermack and McKendrick recognized that this equation could be mapped onto an epidemic situation by treating new infections as ``births".  Mathematically, we can transform the model to the commonly known susceptible-infected-recovered (SIR) differential equation model by applying a specific transformation that removes the dependence on age of infection through the renewal equation (notice that the left hand side of equation 11 is only a function of time, whereas the right hand side involves both time and age of infection). Details are presented in \cite{brauer2017mathematical}.
+
+
+One of the most studied quantities to come from the simple SIR model is known as the ``reproduction number" or $R_0$. This quantity can be thought of as the expected number of secondary infections a single infected individual will produce at the start of the epidemic (or equivalently in a ``infinite" susceptible population). The qualifier, at the start of the epidemic, is added to remove the influence of a limited susceptible population towards the end. This quantity allows for comparison across diseases to gauge the relative fecundity of the disease. We can see the importance of the $R_0$ threshold value of 1 by re-writing when $S(t) \approx 1$, 
 
 \begin{equation}
-S(t) = x(t) , \ \ A(s)= B(s) = e^{-\gamma s}, \ \ y(t) =  aI(t)
-\end{equation}
-
-
-\begin{eqnarray}
-  S'(t) &=& S(t)\left[ \int_0^t e^{-\gamma s}S'(t-s)ds + e^{-\gamma t} y_0 \right] \\
-  R'(t) &=& \int_0^t C(s)v(t-s)ds + C(t)y_0\\
- \beta I (t) &=& -S(t)\int_0^t e^{-\gamma s}S'(t-s)ds + e^{-\gamma t}y_0\\
-\end{eqnarray}
-
-
-We can see, using the renewal equation, that $\S(t)int_0^t e^{-\gamma s}S'(t-s)ds = I(t)$, that these equations reduce to the kernel of the common sir model,
-
-
-\begin{eqnarray}
-S'(t) &=& -\beta*S(t)I(t)\\
-I'(t) &=& \beta*S(t)I(t) - \gamma*I(t)
-\end{eqnarray}
-
-Under the constraint that $I(t) + R(t) +S(t) = N$ we can add the corresponding differential equation for the number of recovered, $R'(t) = -\gamma I(t)$. Thus, the SIR model was ``born", and became a leading tool for infectious disease epidemiologists to study properties of epidemics.
-
-One of the most studied quantities to come from the simple SIR model is known as the ``reproduction number" or $R_0$. This quantity can be thought of as the expected number of secondary infections a single infected individual will produce at the start of the epidemic. The qualifier, at the start of the epidemic, is added to remove the influence of a limited susceptible population towards the end. This quantity allows for comparison across diseases. We can see the importance of the $R_0$ threshold value of 1 by re-writing when $S(t) \approx 1$, 
-
-\begin{equation}
-I'(t) =(\beta - \gamma) *I(t)
+\frac{dI}{dt}=(\beta - \gamma) *I(t)
 \end{equation}
 
 Therefore, if $\beta-\gamma \leq 0$ (which is the same condition as $\frac{\beta}{\gamma}  < 1$the derivative of prevalent infections is negative, meaning infections are decreasing. If $\frac{\beta}{\gamma}  >1$ then infections are increasing. 
@@ -355,7 +346,7 @@ I'(t) = R_t \int_0^t I'(\tau) g_{\tau} d\tau
 
 where $I'(t)$ denotes the number of new infections at time $t$ and $g_{\tau}$ represents the serial interval probability function evaluated at $\tau$. Here we can think of $\tau$ as a time index from start of epidemic until current time.
 
-Finally, we turn to stochastic compartmental models. First developed in the 1950's by Bailey and Whittle \cite{whittle1955outcome}\cite{bailey1953total}. These models re-framed the differential equation models of 1920's as Markov chains, with transition probabilities that involve the same parameters as the differential equations. We can define the Markov chain analogue of the SIR model as follows \cite{allen2010introduction}\cite{allen2000comparison}\cite{brauer2012mathematical}. 
+We next turn to stochastic compartmental models. First developed in the 1950's by Bailey and Whittle \cite{whittle1955outcome}\cite{bailey1953total}. These models re-framed the differential equation models of 1920's as Markov chains, with transition probabilities that involve the same parameters as the differential equations. We can define the Markov chain analogue of the SIR model as follows \cite{allen2010introduction}\cite{allen2000comparison}\cite{brauer2012mathematical}. 
 
 
 \begin{equation}
@@ -371,28 +362,25 @@ Finally, we turn to stochastic compartmental models. First developed in the 1950
 Where we choose $\delta t$ small enough that only one of three mutually exclusive events can occur. Either there is a single infection, in which case the number of susceptibles drops by one and the number of infected increases by one, or there is a single recovery, in which case the number of infected drops by one, or no event occurs. Note that we can recover the number of recovered using the population constraint. Choosing $\delta t$ small enough ensures that each transition is a valid probability $<1$. This construction is particularly helpful when assessing the probabilistic properties of common infectious disease model estimators. While these models were introduced shortly after the differential equation models, they have not been nearly as widely adopted, possibly due to the computational limitations. Note that the Markov chain representation also extends to arbitrarily complicated compartmental models by defining the transition probabilities between each compartment. 
 
 
-
-
-
 However, there are a few key differences between the deterministic counterparts. First, in the deterministic differential equation the event that neither an infection or recovery occurs is impossible. By integrating time at all (even a small $\epsilon$), there is necessarily a transfer between compartments. Second, there is a non-zero probability that even with an $R_0 > 1$ the epidemic will die out in the stochastic model. That is, you could have every initially infected person recover before they infect anyone else. While this probability is small, it is non-zero, unlike the differential equation model. 
 
 
-
+We can see that ecosystem of compartmental models has expanded considerably since their inception in 1927. There are now a variety of choices to make when deciding to use a compartmental model for inference or forecasting, each with their benefits and hindrances. Current theoretical work focuses on extending the above ideas to specific network structured, where the assumption of homogenous mixing is replaced with a contact network graph \cite{kenah2007network}.
 
 \subsection{Statistical models}
 
 
-We next turn to a brief overview of the alternatives to compartmental models that have been employed in infectious disease modeling. While Kermack and McKormick developed the initial SIR model in the 1920's, statisticians, such as Udny Yule, were developing general time series modeling approaches. These included models of the auto-regressive form for an arbitrary time-series. 
+We next turn to a brief overview of the alternatives to compartmental models that have been employed in infectious disease modeling. While Kermack and McKendrick developed the initial SIR model in the 1920's, statisticians, such as Udny Yule, were developing general time series modeling approaches. These included models of the auto-regressive form for an arbitrary time-series. 
 
 \begin{equation}\label{eq:AR}
-y_i = c + \sum_{i=1}^{p}\varphi_i y_{t-1} + \varepsilon_t = \dots
-    \end{equation}
+y_i = c + \sum_{i=1}^{p}\varphi_i y_{t-1} + \varepsilon_t
+   \end{equation}
 
-These models made no underlying assumption about the causal generating mechanism of the time-series, only that future values should look like previous ones. This was the beginning of time-series modeling that has expanded to all sorts of non-parametric, structural, and auto-regressive time series methods. We defer to Chatfield et. al for a detailed description of time series forecasting methods \cite{chatfield2000time}.
+These models made no underlying assumption about the causal generating mechanism of the time-series, only that future values should look like previous ones. This was the beginning of time-series modeling that has expanded to all sorts of non-parametric, structural, and auto-regressive time series methods. We defer to Chatfield et. al for a detailed description of time series forecasting methods \cite{chatfield2000time}, but note that the philosophical difference between the two approaches is significant. Time series methods view the problem as a curve fitting exercise and can be applied regardless of the underlying data generating process. Compartmental models are tailored to the causal assumptions made in the data generating process.
 
 \subsubsection{Merging Mechanistic and Statistical Models}
 
-More recently, work has been done on merging statistical models and mechanistic models to try and capture the unique advantages of both approaches in a single model. This began with the work of Oshtus et. al, where they encoded the SIR model in a state-space setup, while allowing for both observation noise (under a beta observation model) and transmission noise through a dirichlet model \cite{osthus2017forecasting}. This allowed for latent SIR-type curves, that were not required to follow the exact differential equation path, but were constrained to look like an SIR curve as a function of the dirichlet noise parameter. 
+More recently, work has been done on merging statistical models and mechanistic models to try and capture the unique advantages of both approaches in a single model. This began with the work of Oshtus et. al, where they encoded the SIR model in a state-space setup, while allowing for both observation noise (under a beta observation model) and transmission noise through a Dirichlet model \cite{osthus2017forecasting}. This allowed for latent SIR-type curves, that were not required to follow the exact differential equation path, but were constrained to look like an SIR curve as a function of the Dirichlet noise parameter. 
 
 In a similar vein, Frasso and Lambert introduced a Bayesian model that extended the classic SEIR model to include a spline model for transmissibility. That is, 
 
@@ -404,20 +392,33 @@ where $s(t)$. This is another approach to producing SIR-type curves. At each tim
 
 Both approaches allow for a merging of mechanistic and statistical models. However, it is still unclear wether the best statistical model in a particular application may still outperform a hybrid statistical-mechanistic model. This is still an exciting avenue of research.
 
-While hybrid models do have promise in the real of forecasting, once a non-parametric extension has been made, their usefulness in inference is comprised. This is why 
+While hybrid models do have promise in the real of forecasting, once a non-parametric extension has been made, their usefulness in inference is comprised. This highlights the difference between building a compartmental model for forecasting versus for inference. The different goals require different model assumptions that are often incompatible. 
 
 \section{Surveillance Systems}
 
-Infectious disease surveillance began as early as the Egyptians, with Pharaoh Memphsis recording the first great ``pestilence" \cite{choi2012past}. In fact, many historical records exist of epidemics all over the ancient world. However, the first proper tally of the burden of infectious disease came from Venice in 1348, at the height of the black plague. Public health officials of Venice were able to trace the source of an outbreak to ships arriving from oversees. They were able to take action and ban the docking of black plague infected ships. This is the first documented actionable use of infectious disease surveillance \cite{moro1988surveillance}. 
+In order to produce a forecast, from either a statistical or compartmental model, molders need infectious disease data. Infectious disease surveillance began as early as the Egyptians, with Pharaoh Memphis recording the first great ``pestilence" \cite{choi2012past}. In fact, many historical records exist of epidemics all over the ancient world \cite{choi2012past}. However, the first proper tally of the burden of infectious disease came from Venice in 1348, at the height of the black plague. Public health officials of Venice were able to trace the source of an outbreak to ships arriving from oversees. They were able to take action and ban the docking of black plague infected ships. This is the first documented actionable use of infectious disease surveillance \cite{moro1988surveillance}. 
 
-In applied infectious disease forecasting, the surveillance system that detects and reports cases or deaths must be taken into account when building a model. Each system has a unique set of challenges in collecting data. While the issues surrounding COVID-19 are well known, incomplete testing, asymptomatic transmission and delayed reporting, routine influenza surveillance also suffers from these issues. 
+
+Modern infectious disease surveillance encompasses a large variety of reporting systems from electronic health records to hand written disease counts delivered to local public health offices \cite{lombardo2012disease}. While a complete description of modern surveillance is outside of the scope of this thesis, the surveillance system that detects and reports cases or deaths must be taken into account when building a model. Each system has a unique set of challenges in collecting data. While the issues surrounding COVID-19 are more well known, incomplete testing, asymptomatic transmission and delayed reporting, routine influenza surveillance also suffers from these issues \cite{yue2020estimating}\cite{navarro2005influenza}. 
 
 \section{Challenges}
-   However, infectious disease modeling still faces many challenges. On the applied side, these range from data quality issues, to parameter identifiability, to computational efficiency. Real-world infectious disease data is often incomplete, with under-reported of cases due to incomplete testing, revisions due to inaccurate diagnoses, and reporting infrastructure delays that cause significant backlog in reporting.  Differential equation models rely on key epidemiological parameters, such as the time to recovery, of a specific disease. Identifying these parameters from time series data only is a difficult task, and often leads to misspecification. In order to avoid this issue, non-parametric extensions to the classical compartmental models allow us soak up deviations in the data from prior estimates of epidemiological parameters. Finally, fitting complex compartmental models requires extensive computational resources, with fitting usually requiring an approximation algorithm such as the Runge-Katta 4th order approximation that is computationally expensive. 
+   However, infectious disease modeling still faces many challenges. Here we describe some common issues that we will address in the remainder of this work.
    
+   \begin{itemize}    
+   \item Real-world infectious disease data is often incomplete, with under-reported of cases due to incomplete testing, revisions due to inaccurate diagnoses, and reporting infrastructure delays that cause significant backlog in reporting.
    
+     \item Differential equation models rely on key epidemiological parameters, such as the time to recovery and incubation period of a specific disease. Identifying these parameters from time series data only is a difficult task, and often leads to misspecification. 
+     \item Flexibility to adapt to discrepancies between the deterministic differential equation and the observed data are necessary to capture surveillance idiosyncrasies   
+     \item Fitting complex compartmental models requires extensive computational resources. 
+    \item Estimators of intervention efficacy do not take into account real world testing issues. 
+  \end{itemize}
+  
+  
  \section{Chapters}  
-           In this work, we explore these issues by addressing three problems that arise in infectious disease modeling. First, we explore how to remedy the issue of forecasts that are made for independent geographies, as well as an aggregate geography, may be reconciled into a set of "coherent" forecasts, where the sum of the independent geography forecasts is required to be equal to the aggregate geography forecast. In many forecasting competitions, such as the FluSight and COVID-19 competition, forecasts are required for each state, as well as the nation as a whole. If the data-generating process is such that the regional data is aggregated to a national level, then forecasts for regional data should aggregate to the forecast for the nation. However, due to the variability in forecast quality by geography, taking the simple sum of the regional forecasts is not necessarily the optimal method. In chapter 1, we explore methods to aggregate regional forecasts to improve forecast score under probabilistic scoring. In chapter 2, we explore methods for correcting reporting delay in influenza data in the U.S.. In chapter 3, we operationalize classical compartmental models to forecast COVID-19 in the U.S. in real-time. We extend the classic susceptible-exposed-infected-recovered model to include a negative binomial observation model, time varying transmission, and time-varying case detection probability and demonstrate the performance over the baseline model, as well as other models submitted to the COVID-Hub.
+           In this work, we explore these challenges by addressing four specific problems that arise in infectious disease modeling. First, we explore how to reconcile forecasts that are made for independent geographies into a set of ``coherent" forecasts, where the sum of the independent geography forecasts is required to be equal to the aggregate geography forecast. In many forecasting competitions, such as the FluSight and COVID-19 competition, forecasts are required for each state, as well as the nation as a whole. If the data-generating process is such that the regional data is aggregated to a national level, then forecasts for regional data should aggregate to the forecast for the nation. However, due to the variability in forecast quality by geography, taking the simple sum of the regional forecasts is not necessarily the optimal method. In chapter 1, we explore methods to aggregate regional forecasts to improve forecast score under probabilistic scoring.
+           Since 2017, the CDC has organized a state level influenza forecasting challenge. While data is released weekly on the  influenza like illness signal, it is commonly revised later on. Forecasts are scored probabilistically against the revised data so taking into account future revisions to the data may improve forecast skill. Here we focus on the state level forecasts, since each state department of public health has their own reporting infrastructure that may provide different biases in the initial reports. In chapter 2, we explore methods for correcting reporting delay in influenza forecasts for the 50 states.
+           While compartmental models have long been used to study theoretical properties of disease transmission, operational compartmental models are relatively new. These models face real-time data challenges and require flexibility beyond the traditional deterministic differential equation models. In chapter 3, we operationalize classical compartmental models to forecast COVID-19 in the U.S. in real-time. We extend the classic susceptible-exposed-infected-recovered model to include a negative binomial observation model, time varying transmission, and time-varying case detection probability and demonstrate the performance over the baseline model, as well as other models submitted to the COVID-Hub.
+           Commonly used intervention efficacy estimators (that rely on the time varying reproduction number) use a deterministic style renewal equation. These estimators are used to determine whether the epidemic is below a critical threshold and will either exponentially speed up or die out. However, just as with forecasting, this estimators are applied to data with incomplete testing. In chapter 4, we introduce a stochastic variation that allows us to investigate and potentially correct for the bias associated with testing. 
 %%
 %% Some sample text
 \chapter{Improving Probabilistic Infectious Disease Forecasting Through Coherence}
@@ -922,7 +923,7 @@ The proof proceeds as follows:
 
 \chapter{Accounting for delay}
 
- Since 2013, the CDC has organized an influenza forecasting challenge that brings together modellers and public health officials from across the U.S. in an effort to generate probabilistic forecasts of influenza-like-illness (ILI). The CDC defines ILI as a ratio of patients presenting with a cough and fever over 100 over the total number of patients. They release weekly ILI data across 10 health and human services regions (HHS) as well as a nationally. However, the initial estimate of ILI may be revised as more providers in a given HHS region report both the number of patients that tested positive for ILI symptoms and the total number of patients. Many models in the competition take the ILI reporting revisions into account when forecasting. However, the effects of controlling for these revisions across various process models has yet to fully understood. We present a detailed exploratory analysis of the sources of reporting revisions, the effects on the available ILI, and the consequences on forecast skill. 
+ Since 2013, the CDC has organized an influenza forecasting challenge that brings together modellers and public health officials from across the U.S. in an effort to generate probabilistic forecasts of influenza-like-illness (ILI). The CDC defines ILI as a ratio of patients presenting with a cough and fever over 100 over the total number of patients. They release weekly ILI data across 50 states However, the initial estimate of ILI may be revised as more providers in a given state report both the number of patients that tested positive for ILI symptoms and the total number of patients. Many models in the competition take the ILI reporting revisions into account when forecasting. However, the effects of controlling for these revisions across various process models has yet to fully understood. We present a detailed exploratory analysis of the sources of reporting revisions, the effects on the available ILI, and the consequences on forecast skill. 
 
 
 \section{Importance of Influenza Forecasting}
@@ -947,7 +948,7 @@ With respect to influenza-like-illness in the U.S., much of the current efforts 
 
 \section{US ILI Surveillance Data}
 
-For the national challenge, the CDC wILI data are provided at both the national level and broken down into 10 Health and Human Services (HHS) regions, mostly organized by geographical proximity. The national level data extend from 1997 to the present and the HHS regional data are available starting from 2013. The revised wILI data are highly seasonal and vary by region (Figure \ref{fig:data-overview}A). For the state level challenge, only data from 2016 to the present is available. Data is reported for each state at the ILI level, except for Florida, which does not participate. 
+For the state challenge, the CDC wILI data are provided at the state level. The data extend from  1997 to the present and the HHS regional data are available starting from 2013. The revised wILI data are highly seasonal and vary by region (Figure \ref{fig:data-overview}A). For the state level challenge, only data from 2016 to the present is available. Data is reported for each state at the ILI level, except for Florida, which does not participate. 
 
 These data are reported by the ILINet system, a consortium of over 3,500 outpatient healthcare facilities across all states and territories in the US. Each week, around 2,200 of these providers report both total number of patient visits and total number of patients presenting with influenza-like symptoms. These two numbers are combined to report the percentage of cases reporting with influenza-like symptoms and are weighted by population size of the state to generate the final regional or national wILI level. \cite{cdc_flusight}
 
@@ -1008,12 +1009,6 @@ As we can see from equation 3, $ILI_{new}$ can be either greater or less than $I
 The other way in which available ILI may be revised is through revisions to data already reported by providers. These revisions are again unpredictable in direction, but are also unpredictable when they occur. Unfortunately, the have significant effect on reported wILI (ILI) as shown in \ref{fig:same_prov_diff} 
 
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[scale=.35]{same_prov_diff.png}
-    \caption{Available wILI data for HHS Region 2 as of epiweek 201615. Notice that even though all providers have reported their data for epiweek 201551, there is still a large difference between the available wILI value and the final wILI value. This is because providers that have already reported are updating their estimates.}
-    \label{fig:same_prov_diff}
-\end{figure}
 
 
 Both of these revision mechanisms lead to a significant difference between the available wILI (ILI) and the final wILI (ILI). This is evident in \ref{fig:total_diff}, where we see considerable differences in the available data and the final data. Only $67\%$ of initially reported ILI is within .1 units of the finally observed value.  
@@ -1023,7 +1018,12 @@ Both of these revision mechanisms lead to a significant difference between the a
 Unfortunately, the effects of reporting revisions are magnified during the peak weeks of the season, when accurate estimates of wILI (ILI) are most important. This can be seen in 
 \ref{fig:peak_week_revisions}, 
 
-
+\begin{figure}
+    \centering
+    \includegraphics[scale=.35]{rep_diff.png}
+    \caption{Difference between initially reported and finally reported  }
+    \label{fig:my_label}
+\end{figure}
 
 
 \section{Modelling revisions}
