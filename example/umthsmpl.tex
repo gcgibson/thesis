@@ -143,7 +143,7 @@
 
 %%
 %% You must fill in all of these appropriately
-\title{Infectious Disease Forecasting for Public Health}
+\title{Applied Infectious Disease Forecasting for Public Health}
 \author{Graham Gibson}
 \date{August 2020} % The date you'll actually graduate -- must be
                      % February, May, or September
@@ -388,7 +388,7 @@ In a similar vein, Frasso and Lambert introduced a Bayesian model that extended 
 \beta(t) = \beta_0 + s(t) + \epsilon
 \end{equation}
 
-where $s(t)$. This is another approach to producing SIR-type curves. At each time interval between t and t+1, the dynamics must follow an SIR curve, but the spline allows for time points separated by more than one time unit to come from separate transmissibility parameters, and therefore different SIR curves. 
+where $s(t)$ represents a spline function applied to time. This is another approach to producing SIR-type curves. At each time interval between t and t+1, the dynamics must follow an SIR curve, but the spline allows for time points separated by more than one time unit to come from separate transmissibility parameters, and therefore different SIR curves. 
 
 Both approaches allow for a merging of mechanistic and statistical models. However, it is still unclear wether the best statistical model in a particular application may still outperform a hybrid statistical-mechanistic model. This is still an exciting avenue of research.
 
@@ -923,7 +923,7 @@ The proof proceeds as follows:
 
 \chapter{Accounting for delay}
 
- Since 2013, the CDC has organized an influenza forecasting challenge that brings together modellers and public health officials from across the U.S. in an effort to generate probabilistic forecasts of influenza-like-illness (ILI). The CDC defines ILI as a ratio of patients presenting with a cough and fever over 100 over the total number of patients. They release weekly ILI data across 50 states However, the initial estimate of ILI may be revised as more providers in a given state report both the number of patients that tested positive for ILI symptoms and the total number of patients. Many models in the competition take the ILI reporting revisions into account when forecasting. However, the effects of controlling for these revisions across various process models has yet to fully understood. We present a detailed exploratory analysis of the sources of reporting revisions, the effects on the available ILI, and the consequences on forecast skill. 
+ Since 2013, the CDC has organized an influenza forecasting challenge that brings together modelers and public health officials from across the U.S. in an effort to generate probabilistic forecasts of influenza-like-illness (ILI). The CDC defines ILI as a ratio of patients presenting with a cough and fever over 100 over the total number of patients. They release weekly ILI data across 50 states However, the initial estimate of ILI may be revised as more providers in a given state report both the number of patients that tested positive for ILI symptoms and the total number of patients. Many models in the competition take the ILI reporting revisions into account when forecasting. However, the effects of controlling for these revisions across various process models has yet to fully understood. We present a detailed exploratory analysis of the sources of reporting revisions, the effects on the available ILI, and the consequences on forecast skill. 
 
 
 \section{Importance of Influenza Forecasting}
@@ -955,7 +955,7 @@ These data are reported by the ILINet system, a consortium of over 3,500 outpati
 The CDC releases updated wILI data on a weekly basis for all states and regions. These updates include new wILI estimates for the most recent week, in addition to revisions for all prior weeks of the season. As noted above, revisions can be made either upwards or downwards due to updates to both the total number of visits and total of number of ILI visits. An example of historical revisions is shown in Figure \ref{fig:data-overview}B). Revision data extends back to 1997 for the national level data, but only includes the 2017/2018 season for state level data. 
 
 
-In the following analysis we consider only the initially reported and finally revised wILI values for a given epiweek $w$. This is because when forecasting from epiweek $w$ in real-time we only have access to the initially reported wILI value for epiweek $w$. Modifications to the forecast for epiweek $w+h$ should therefore be based on potential revisions to the initially reported data. Differences between initially reported and finally revised ILI is shown in Figure \ref{fig:diff_v_final_ili}
+In the following analysis we consider only the initially reported and finally revised wILI values for a given epiweek $w$. This is because when forecasting from epiweek $w$ in real-time we only have access to the initially reported wILI value for epiweek $w$. Modifications to the forecast for epiweek $w+h$ should therefore be based on potential revisions to the initially reported data. Differences between initially reported and finally revised ILI is shown in Figure \ref{fig:diff_v_final}
 
 
 
@@ -992,39 +992,25 @@ There are two main sources of revisions.
     \item Providers revising an estimate they previously reported 
 \end{itemize}
 
-We handle each case separately because of the different ramifications each revision process has on the reported ILI value. 
 
-If providers simply do not send their data into the CDC by the deadline for a given epiweek, this is reflected in the \textbf{number of providers} the CDC estimate is based on. Unfortunately, this information alone is not enough to accurately adjust the ILI towards the final reported ILI. This is because of proportion definition of ILI. 
+If providers simply do not send their data into the CDC by the deadline for a given epiweek, this is reflected in the number of providers the CDC estimate is based on. Unfortunately, this information alone is not enough to accurately adjust the ILI towards the final reported ILI. This is because of proportion definition of ILI. 
 
 \begin{equation}
     ILI_{new} = \frac{\text{num ILI}_{old} + \text{num ILI}_{new}} {\text{num patients}_{old} + \text{num patients}_{new}}
 \end{equation}
 
 
-As we can see from equation 3, $ILI_{new}$ can be either greater or less than $ILI_{old}$ depending on the relative contribution of $\text{num ILI}_{new}$ to the numerator and $\text{num patients}_{new}$ to the denominator. Thus, just because providers have not reported their data, does not mean ILI will go up. This makes the problem of predicting backfill quite difficult. Existing methods have used the number of providers as an indicator of uncertainty around the available ILI, but not as an indicator of the direction the ILI will be revised. This is shown in \ref{fig:revisions_by_prov} where we examine the difference between the number of providers initially reported versus the number of providers reported at the end of the season for a given epiweek. As expected, as the difference in the initial providers and final providers gets smaller, the difference in the initial number of ILI positive patients versus the final number of ILI positive patients also decreases. Similarly, the difference in the total number of patients initially reported versus the number of paitents finally reported also decreases (tends towards 0). However, because ILI is a proportion of the two, as the difference in the initial number of providers and final number of providers goes to 0, the difference in initial ILI and final ILI displays no clear trend. 
+As we can see from equation 3, $ILI_{new}$ can be either greater or less than $ILI_{old}$ depending on the relative contribution of $\text{num ILI}_{new}$ to the numerator and $\text{num patients}_{new}$ to the denominator. Thus, just because providers have not reported their data, does not mean ILI will go up. 
 
-
-
-
-The other way in which available ILI may be revised is through revisions to data already reported by providers. These revisions are again unpredictable in direction, but are also unpredictable when they occur. Unfortunately, the have significant effect on reported wILI (ILI) as shown in \ref{fig:same_prov_diff} 
-
-
-
-
-Both of these revision mechanisms lead to a significant difference between the available wILI (ILI) and the final wILI (ILI). This is evident in \ref{fig:total_diff}, where we see considerable differences in the available data and the final data. Only $67\%$ of initially reported ILI is within .1 units of the finally observed value.  
-
-%\includegraphics[scale=.25}{CA_rep_diff.png}
-
-Unfortunately, the effects of reporting revisions are magnified during the peak weeks of the season, when accurate estimates of wILI (ILI) are most important. This can be seen in 
-\ref{fig:peak_week_revisions}, 
 
 \begin{figure}
     \centering
-    \includegraphics[scale=.35]{rep_diff.png}
-    \caption{Difference between initially reported and finally reported  }
-    \label{fig:my_label}
+    \includegraphics[scale=.15]{delay_data.png}
+    \caption{Empirical difference between initially reported ILI and final reported ILI used for scoring for the states with a significant difference between initial and final ILI.  Note the large heterogeneity of revisions by both epiweek and region. Some states show a consistent bias high (SC) and some show a consistent bias low (AK). However, most states exhibit both under and over reporting. Note that VI switched to electronic reporting and now shows no delay.}
+    \label{fig:diff_v_final}
 \end{figure}
 
+As we can see from Figure \ref{fig:diff_v_final}, there is large heterogeneity in revisions by epiweek and by state. Here we subset the states to those with a significant difference ($\alpha < .05$ using T-test) between the initial and final reported ILI, which we denote as dILI. This allows us to model revisions only for states that show a significant effect of revisions on their reported ILI. We can also see from  \ref{fig:diff_v_final} that reporting practices change over time. Virginia switched to electronic reporting on 201743, which eliminated all revisions. 
 
 \section{Modelling revisions}
 
@@ -1051,67 +1037,31 @@ which yields the empirical forecast distribution $P_{r,s,w,h,m}^{adjusted}$ of t
 
 We can then compute the forecast skill under both $P_{r,s,w,h,m}^{adjusted}$ and $P_{r,s,w,h,m}^{original}$ across all indices $r,s,w,h,m$ to evaluate the relative performance. 
 
-Finally, in order to estimate $d_{w,r,s}$ we use a regression model of the form
 
+\subsection{Models for dILI}
+In order to estimate $d_{w,r,s}$ we evaluate three possible models,
 
-\begin{equation}
-    d_{w,r,s} = \beta_0 +\beta_1 S(w) + \beta_2 r + \epsilon 
-\end{equation} 
+\begin{itemize}
+\item \textbf{Mean Model}. This model simply averages over all observed differences by region, $d_{w,r,s} = d_{.,r,.}$.
+\item \textbf{Epiweek Model}. This model allows revisions to vary over epiweek, $d_{w,r,s} = \beta_0 +\beta_1 S(w) + \beta_2 r + \epsilon $
+\item  \textbf{ARMA model}. This model allows revisions to follow an auto-regressive moving average time series model as fit by the Forecast package.
 
-    $$\epsilon \sim N(0,\sigma^2)$$
+\end{itemize}
 
-where $w$ is epiweek (40-52,1-20), $r$ is region and $S(w)$ is a spline function. 
+\subsection{Evaluation}
+In order to evaluate our revision models we estimate $d_{w,r,s}$ on revision data for the 2017/2018 and 2018/2019 seasons. We then predict the finalized ILI data for the 2019/2020 and compute the ratio of the initial ILI to the final ILI as well as the estimated final ILI to the final ILI. Values closer to one indicate a better prediction of the final ILI value. 
 
+\subsection{Results: Mean revision Model}
+As we can see in \ref{fig:ca_dili}, the results of a simple mean adjustment on the ILI value vary drastically by region. For states with a clear directional bias in reporting, the mean model improves the estimate over the initial ILI value significantly, however, for states with both under and over reporting the mean model improvements less clear. 
 \begin{figure}
     \centering
-    \includegraphics[scale=.35]{model_fit.png}
-    \caption{Model fits to the difference between initially reported wILI and finally revised wILI ($d_{r,s,w}$) for 2012/2013-2016/2017 seasons stratified by region. }
-    \label{fig:my_label}
-\end{figure}
-\section{Experimental Setup}
-
-In order to evaluate the effects of reporting revisions in a model agnostic way. We borrow from Gibson et. al and sample from the set of forecast distributions made publicly available by the CDC \cite{cdcfluepi}. This allows us to generate the forecast distribution $P_{r,s,w,h,m}$ as above. 
-
-We train the revision model in Equation 7 on data from 2012/2013 through 2016/2017 and reserve 2017/2018 through 2018/2019 as test seasons to evaluate our model under single-bin scoring. 
-
-We compare the forecast skill of the delay adjusted distributions against the original distribution for all regions and epiweeks in the test seasons.
-\section{Results}
-
-Under the mean revision model we are able to improve $93\%$ of models by an average of $.00227$ skill units. This is demonstrated in 
-\begin{figure}
-    \centering
-    \includegraphics[scale=.3]{percent_improvement.png}
-    \caption{Difference in forecast skill between delay adjusted and original forecast submissions.  }
-    \label{fig:my_label}
+    \includegraphics[scale=.2]{mean_adjustment.png}
+    \caption{Out of sample mean adjustment fits .  }
+    \label{fig:ca_dili}
 \end{figure}
 
+I will add much more detailed results for this model and the other models presented. I will also add a case study using a forecasting model (sarimaTD) to examine the impact of adjusting the ILI before forecasting. Either way the results will be interesting. I still think it would be a helpful contribution to the community to show that adjusting for delay is not as important as we might think. 
 
-
-\begin{figure}
-   \begin{subfigure}{.5\textwidth}
-  \centering
-\includegraphics[scale=.15]{target_chap2.png}
- \caption{Target}
-\end{subfigure}%
-\begin{subfigure}{.5\textwidth}
-  \centering
-    \includegraphics[scale=.2]{season.png}
-    \caption{Season}
-\end{subfigure}
-\centering
-\begin{subfigure}{.5\textwidth}
-  \centering
-    \includegraphics[scale=.3]{region.png}
-    \caption{Region}
-\end{subfigure}
-
-\label{fig:model_results}
-\end{figure}
-
-\section{Conclusion}
-
-
-Flu forecasting is a challenging but critical endeavour in preparing public health communications at the both the national and state level. Reporting revisions add an additional layer of difficulty in forecasting. Unfortunately, these revisions arise from human behavior, by providers either not reporting in a timely fashion or by simply updating their estimates. This means accounting for reporting revisions is not practical without data at the provider type level. Pushing for greater provider granularity will improve forecasts and lead to more reliable public health actions. 
 
 
 \chapter{Mechanistic Bayesian Forecasts of COVID19}
@@ -1721,13 +1671,22 @@ I_t = &=& I_{t-1} + I'_t - R'_t
 Consider the Cori estimator in the context of the probabilistic discrete SIR model, 
 
 \begin{eqnarray}
-\hat{R_t} | H_{t-1} &=& \frac{I'_t}{\sum_{i=1}^t I'_{t-i} g_i}\\
-\hat{R_t} | H_{t-1} &=& \frac{I'_t}{\gamma \sum_{i=1}^t I'_{t-i} (1-\gamma)^i}\\
-\hat{R_t} | H_{t-1} &=& \frac{I'_t}{\gamma \sum_{i=1}^t I'_{t-i} (1-\gamma)^i}\\
-\hat{R_t} | H_{t-1} &=& \frac{I'_t}{\gamma I_{t-1}}\\
-\mathbf{E}[\hat{R_t} | H_{t-1}] &=& \frac{S_{t-1}\beta I_{t-1}}{\gamma I_{t-1}}\\
-\mathbf{E}[\hat{R_t} | H_{t-1}] &=& \frac{S_{t-1}\beta }{\gamma }\\
+I_t  | H_{t}&=& \sum_{i=1}^t \sum_{j=1}^{I'_{t-i}} T_{t-i,j} \\
+I'_{t+1} | H_{t} &\sim& Pois( \beta  * S(t)  \sum_{i=1}^t \sum_{j=1}^{I'_{t-i}} T_{t-i,j} )\\
+\mathbf{E}[I'_{t+1} | H_{t}] &=&  \beta  * S(t)  \sum_{i=1}^t \sum_{j=1}^{I'_{t-i}}  \mathbf{E}[T_{t-i,j} ]\\
+\mathbf{E}[I'_{t+1} | H_{t}] &=&  \beta  * S(t)  \sum_{i=1}^t \sum_{j=1}^{I'_{t-i}}  (1-\gamma)^{i-1} \\
+\mathbf{E}[I'_{t+1} | H_{t}] &=&  \frac{\beta}{\gamma}  * S(t)  \sum_{i=1}^t I'_{t-i}\gamma (1-\gamma)^{i-1} 
 \end{eqnarray}
+
+The corresponding Cori estimator,
+\begin{eqnarray}
+\hat{R_t} | H_{t} &=& \frac{I'_t}{\sum_{i=1}^t I'_{t-i} \gamma (1-\gamma)^{i-1} }\\
+\mathbf{E}[\hat{R_t} | H_{t} ]&=& \frac{\mathbf{E}[I'_t]}{\sum_{i=1}^t I'_{t-i} \gamma (1-\gamma)^{i-1} }\\
+\mathbf{E}[\hat{R_t} | H_{t} ]&=& \frac{ \frac{\beta}{\gamma}  * S(t)  \sum_{i=1}^t I'_{t-i}\gamma (1-\gamma)^{i-1} }{\sum_{i=1}^t I'_{t-i} \gamma (1-\gamma)^{i-1} } \\
+\mathbf{E}[\hat{R_t} | H_{t} ]&=&  \frac{\beta}{\gamma}  * S(t) 
+\end{eqnarray}
+
+
 
 where $H_t = \{I'_{1:t},R'_{1:t},S_{1:t},I_{1:t}\}$, that is, the history of the epidemic trajectory until the current time. We can see that the Cori estimator is an unbiased estimate for the given probabilistic construction. In fact, for any probabilistic construction with the first moment of incident cases is $\beta*S_{t-1}*I_{t-1}$ and whose serial interval is $Geom(\gamma)$, the estimator is unbiased.
 
@@ -1770,12 +1729,12 @@ I'_{t,o} \sim Binomial(I'_t,p_t)
 
 \section{Magnitude of bias in Discrete Stochastic SIR model}
 
-This section will demonstrate, through simulation study, the effect of the bias under the testing construction above. 
+This section will demonstrate, through simulation study, the effect of the bias under the testing construction above. Now that we have a probabilistic construction for the Cori estimator and a sampling model, there many interesting avenues we can take to examine both the theoretical and practical bias using simulation studies. 
 
 
 \section{Correcting for the bias}
 
-
+If there is a clear directional bias or variance issue from the above section, this section will attempt to correct for the bias in the estimator by adjusting for the magnitude derived above.  
 
 %% End of body
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
